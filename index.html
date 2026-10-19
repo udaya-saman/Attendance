@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#E4002B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Attendance">
+<title>My Attendance</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--red:#E4002B;--red2:#A80020;--ink:#231f20;--mut:#7a7576;--bg:#f5f1ee;--line:#ebe5e1;--ok:#1e9e5a;--warn:#f0a000;--off:#8d8889}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+header{background:linear-gradient(145deg,var(--red),var(--red2));color:#fff;padding:calc(env(safe-area-inset-top,0px) + 20px) 22px 62px;border-radius:0 0 30px 30px}
+header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.3px}
+header p{margin:2px 0 0;opacity:.85;font-size:14px}
+#clock{margin-top:14px;font-size:38px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+main{max-width:520px;margin:-40px auto 0;padding:0 16px 110px}
+.pg{display:none}.pg.on{display:block}
+.card{background:#fff;border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(70,20,10,.09)}
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.datebar small{color:var(--mut);display:block;font-size:13px}
+.datebar b{font-size:17px}
+.ibtn{width:46px;height:46px;border-radius:14px;background:#fdecee;color:var(--red);display:grid;place-items:center;flex:none}
+svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chips{display:flex;gap:8px;margin-top:14px}
+.chips button{flex:1;padding:11px 4px;border-radius:12px;background:#f4f0ed;font-weight:600;font-size:14px;color:var(--mut)}
+.chips button.on{background:var(--ink);color:#fff}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg button{border:2px solid var(--line);border-radius:18px;padding:12px;text-align:left;color:var(--mut);font-size:13px}
+.seg b{display:block;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px}
+.seg button.on{border-color:var(--red);background:#fff6f7;color:var(--red)}
+.hrs{display:flex;justify-content:space-between;margin:12px 4px 0;font-size:14px;color:var(--mut)}
+.hrs b{color:var(--ink)}
+.pick{position:relative;display:grid;grid-template-columns:1fr 14px 1fr 1fr;align-items:center;margin-top:12px}
+.band{position:absolute;left:0;right:0;top:112px;height:56px;border-radius:16px;background:#fdecee;pointer-events:none}
+.colon{text-align:center;font-size:34px;font-weight:700;z-index:1;margin-top:-4px}
+.w{position:relative;height:280px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);overscroll-behavior:contain}
+.w::-webkit-scrollbar{display:none}
+.w i{display:block;height:112px}
+.w div{height:56px;line-height:56px;text-align:center;scroll-snap-align:center;font-size:28px;color:#c3bdbb;font-variant-numeric:tabular-nums;cursor:pointer}
+.w div.on{color:var(--ink);font-weight:700;font-size:36px}
+.now{display:block;margin:6px auto 0;color:var(--red);font-weight:600;padding:8px 14px}
+.cta{width:100%;padding:17px;border-radius:18px;background:var(--red);color:#fff;font-weight:700;font-size:18px;box-shadow:0 8px 18px rgba(228,0,43,.3);margin-top:8px}
+.cta:active{transform:scale(.98)}
+.cta.ghost{background:#f4f0ed;color:var(--ink);box-shadow:none}
+.search{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 24px rgba(70,20,10,.09);margin-bottom:14px;color:var(--mut)}
+.search svg{color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stats div{background:#fff;border-radius:18px;padding:14px 8px;text-align:center;box-shadow:0 6px 18px rgba(70,20,10,.07)}
+.stats b{display:block;font-size:24px;color:var(--red)}
+.stats span{font-size:12px;color:var(--mut)}
+h2{font-size:17px;margin:18px 4px 10px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:16px;padding:12px 14px;margin-bottom:8px;box-shadow:0 4px 12px rgba(70,20,10,.05)}
+.row .d{width:46px;text-align:center;line-height:1.1}
+.row .d b{display:block;font-size:20px}.row .d span{font-size:11px;color:var(--mut)}
+.row .m{flex:1;font-size:14px;color:var(--mut)}.row .m b{color:var(--ink);display:block}
+.badge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;color:#fff;background:var(--ok)}
+.badge.leave{background:var(--warn)}.badge.off{background:var(--off)}
+.empty{text-align:center;color:var(--mut);padding:24px 10px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;display:flex;justify-content:center;gap:8px;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 8px);box-shadow:0 -6px 24px rgba(0,0,0,.08);z-index:5}
+nav button{flex:1;max-width:220px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px;border-radius:14px;font-size:12px;font-weight:600;color:var(--mut)}
+nav button.on{color:var(--red);background:#fdecee}
+.ov{position:fixed;inset:0;background:rgba(20,10,10,.5);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.ov.open{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:28px 28px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.sheet{animation:none}}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-h b{font-size:18px}
+.cal-h button{width:42px;height:42px;border-radius:12px;background:#f4f0ed;display:grid;place-items:center}
+.cal-h button:disabled{opacity:.3}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.grid span{font-size:12px;color:var(--mut);padding:6px 0}
+.grid button{aspect-ratio:1;border-radius:50%;font-size:16px;position:relative}
+.grid button:disabled{color:#d0cbc9}
+.grid button.today{box-shadow:inset 0 0 0 2px var(--red)}
+.grid button.sel{background:var(--red);color:#fff}
+.grid button[data-s]::after{content:"";position:absolute;bottom:5px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--ok)}
+.grid button[data-s=leave]::after{background:var(--warn)}.grid button[data-s=off]::after{background:var(--off)}
+.grid button.sel::after{background:#fff}
+.det h3{margin:0 0 4px;font-size:20px}
+.det .tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.det .tri div{background:#f7f3f0;border-radius:14px;padding:12px 6px;text-align:center}
+.det .tri span{font-size:12px;color:var(--mut);display:block}.det .tri b{font-size:17px}
+.two{display:flex;gap:10px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:40;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)}
+button:focus-visible{outline:3px solid #ffb3bf;outline-offset:2px}
+
+.cta.green{background:#1e9e5a;box-shadow:0 8px 18px rgba(30,158,90,.3);font-size:19px;padding:19px}
+.cta.dark{background:var(--ink);box-shadow:none}
+.cta.sm{padding:14px 6px;font-size:16px;margin-top:0}
+.cta:disabled{opacity:.35;box-shadow:none}
+.qh{display:flex;justify-content:space-between;align-items:center}.qh b{font-size:17px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.qgrid small{color:var(--mut);font-size:13px}
+.qt{display:block;width:100%;border:2px solid var(--line);border-radius:18px;padding:12px;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;margin:6px 0 10px;background:#fff}
+.qt:active{border-color:var(--red)}
+.badge.prog{background:#2d6cdf}
+.hint{text-align:center;color:var(--mut);font-size:13px;margin:10px 0 0}
+.ov.mid{align-items:center;padding:24px}
+#cfm{z-index:30}
+.dlg{background:#fff;border-radius:26px;padding:24px 20px 20px;width:100%;max-width:360px;text-align:center;animation:up .22s ease-out}
+.dlg .ic{width:60px;height:60px;border-radius:50%;background:#fdecee;color:var(--red);display:grid;place-items:center;margin:0 auto 12px}
+.dlg .ic svg{width:30px;height:30px}
+.dlg h3{margin:0 0 6px;font-size:20px}.dlg p{margin:0 0 14px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>My Attendance</h1>
+  <p id="hdate"></p>
+  <div id="clock"></div>
+</header>
+
+<main>
+  <section class="pg on" id="pg-home">
+    <button class="search" id="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search by date</button>
+    <div class="card" id="qc"></div>
+    <h2>Recent records</h2>
+    <div id="list"></div>
+    <div class="stats">
+      <div><b id="s1">0</b><span>Present (30 days)</span></div>
+      <div><b id="s2">—</b><span>Avg. hours</span></div>
+      <div><b id="s3">0</b><span>Leave days</span></div>
+    </div>
+    <button class="cta green" id="csv">Export to CSV</button>
+    <div class="two" style="margin-top:10px"><button class="cta ghost" id="bak">Back up</button><button class="cta ghost" id="rst">Restore</button></div>
+    <input type="file" id="rf" accept=".json,application/json" hidden>
+    <p class="empty" style="font-size:13px">Records from the last 6 months are kept on this device.</p>
+  </section>
+
+  <section class="pg" id="pg-mark">
+    <div class="card">
+      <div class="datebar">
+        <div><small id="chip">Today</small><b id="dlabel"></b></div>
+        <button class="ibtn" id="pickDate" aria-label="Change date"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></button>
+      </div>
+      <div class="chips" id="chips">
+        <button data-s="present">Present</button><button data-s="leave">Leave</button><button data-s="off">Day off</button>
+      </div>
+    </div>
+    <div class="card" id="pcard">
+      <div class="seg" id="seg">
+        <button data-m="in">Check in<b id="tin">--:--</b></button>
+        <button data-m="out">Check out<b id="tout">--:--</b></button>
+      </div>
+      <div class="hrs"><span>Hours worked</span><b id="hrs">—</b></div>
+      <p class="hint">Tap a time to change it</p>
+    </div>
+    <div class="card" id="scard" style="display:none"><div class="empty" id="stxt"></div></div>
+  </section>
+</main>
+
+<nav>
+  <button data-t="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg>Home</button>
+  <button data-t="mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Mark</button>
+</nav>
+
+<div class="ov" id="calm"><div class="sheet">
+  <div class="cal-h"><button id="pm" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><b id="mt"></b><button id="nm" aria-label="Next month"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button></div>
+  <div class="grid" id="cg"></div>
+  <div class="two" style="margin-top:12px"><button class="cta ghost" id="calTd">Today</button><button class="cta ghost" id="calX">Close</button></div>
+</div></div>
+
+<div class="ov" id="detm"><div class="sheet det" id="det"></div></div>
+<div class="ov" id="tsm"><div class="sheet">
+  <div style="text-align:center;margin-bottom:4px"><b id="tsT" style="font-size:20px"></b><div id="tsD" style="color:var(--mut);font-size:14px"></div></div>
+  <div class="pick"><div class="band"></div><div class="w" id="wH"></div><div class="colon">:</div><div class="w" id="wM"></div><div class="w" id="wP"></div></div>
+  <button class="now" id="now">Use current time</button>
+  <div class="two"><button class="cta ghost" id="tsX">Cancel</button><button class="cta" id="tsOk">Save</button></div>
+</div></div>
+
+<div class="ov mid" id="cfm"><div class="dlg">
+  <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg></div>
+  <h3 id="cT"></h3><p id="cM"></p>
+  <div class="two"><button class="cta ghost" id="cNo">Cancel</button><button class="cta" id="cOk">Delete</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), KEY='myAttendance_v1', H=56;
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const nowT=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+const f12=t=>{if(!t)return'--:--';let[h,m]=t.split(':').map(Number);const p=h>=12?'PM':'AM';return`${h%12||12}:${pad(m)} ${p}`};
+const mins=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
+const dur=r=>!r||!r.in||!r.out||r.in===r.out?null:(mins(r.out)-mins(r.in)+1440)%1440;
+const nxt=r=>!!(r&&r.in&&r.out&&mins(r.out)<mins(r.in));
+const fo=r=>f12(r&&r.out)+(nxt(r)?' +1':'');
+const fdur=d=>d==null?'—':`${Math.floor(d/60)}h ${pad(d%60)}m`;
+const longD=k=>parse(k).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const LBL={present:'Present',leave:'Leave',off:'Day off'};
+
+/* ---- storage: keep last 6 months only ---- */
+let db={};try{db=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast('Storage is full or blocked')}};
+const cutD=new Date();cutD.setMonth(cutD.getMonth()-6);const cut=iso(cutD);
+Object.keys(db).forEach(k=>{if(k<cut)delete db[k]});persist();
+
+let today=iso(new Date()), st={date:today,mode:'in'};
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
+
+/* ---- live clock ---- */
+let pt=today;
+function tick(){const d=new Date(),n=iso(d);if(n!==pt){if(st.date===pt)st.date=n;pt=n;today=n;renderAll()}today=n;
+  $('#clock').textContent=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit'});
+  $('#hdate').textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}
+tick();setInterval(tick,1000);
+
+/* ---- wheel picker (scroll-snap, like a phone alarm) ---- */
+function mk(id,items){const el=$(id);
+  el.innerHTML='<i></i>'+items.map(x=>`<div>${x}</div>`).join('')+'<i></i>';
+  el.onscroll=()=>{const i=Math.round(el.scrollTop/H);[...el.children].forEach((c,j)=>c.classList.toggle('on',j-1===i))};
+  el.onclick=e=>{const j=[...el.children].indexOf(e.target);if(j>0&&j<=items.length)el.scrollTo({top:(j-1)*H,behavior:'smooth'})};
+  el.set=i=>{el.scrollTop=i*H;el.onscroll()};
+  el.get=()=>Math.round(el.scrollTop/H);return el}
+const wH=mk('#wH',Array.from({length:12},(_,i)=>i+1));
+const wM=mk('#wM',Array.from({length:60},(_,i)=>pad(i)));
+const wP=mk('#wP',['AM','PM']);
+function setWheels(t){const[h,m]=(t||nowT()).split(':').map(Number);wH.set((h%12||12)-1);wM.set(m);wP.set(h>=12?1:0)}
+function getWheels(){const p=wP.get(),h=(wH.get()+1)%12+(p?12:0);return pad(h)+':'+pad(wM.get())}
+
+/* ---- confirm dialog ---- */
+let _res;
+function ask(o){$('#cT').textContent=o.title;$('#cM').textContent=o.msg;$('#cOk').textContent=o.ok||'Delete';$('#cfm').classList.add('open');return new Promise(r=>_res=r)}
+function closeAsk(v){$('#cfm').classList.remove('open');if(_res)_res(v)}
+$('#cOk').onclick=()=>closeAsk(true);$('#cNo').onclick=()=>closeAsk(false);
+$('#cfm').onclick=e=>{if(e.target.id==='cfm')closeAsk(false)};
+
+/* ---- helpers ---- */
+const bt=(r,k)=>{const s=r.status||'present';if(s!=='present')return LBL[s];const d=dur(r);return d!=null?fdur(d):r.in?(k===today?'In progress':'No check out'):'Present'};
+const bc=(r,k)=>{const s=r.status||'present';return s!=='present'?s:(dur(r)==null&&r.in?(k===today?'prog':'leave'):'')};
+const renderAll=()=>{renderMark();renderHome()};
+
+async function setTime(date,mode,t){
+  const o={...(db[date]||{}),status:'present'};o[mode]=t;
+  if(o.in&&o.out){
+    if(o.in===o.out){toast('Check in and check out can\u2019t be the same time');return false}
+    const d=dur(o);
+    if(d>960&&!await ask({title:'Very long shift?',msg:`This adds up to ${fdur(d)}${nxt(o)?' (check out is the next day)':''}. Save anyway?`,ok:'Save'}))return false}
+  db[date]=o;persist();toast(mode==='in'?'Check in saved':'Check out saved');return true}
+
+/* ---- time wheel pop-up ---- */
+let ts={};
+function openTime(date,mode){ts={date,mode};$('#tsT').textContent=mode==='in'?'Check in':'Check out';$('#tsD').textContent=longD(date);
+  $('#tsm').classList.add('open');setWheels((db[date]||{})[mode])}
+$('#now').onclick=()=>setWheels(nowT());
+$('#tsX').onclick=()=>$('#tsm').classList.remove('open');
+$('#tsm').onclick=e=>{if(e.target.id==='tsm')e.target.classList.remove('open')};
+$('#tsOk').onclick=async()=>{if(await setTime(ts.date,ts.mode,getWheels())){$('#tsm').classList.remove('open');renderAll()}};
+
+/* ---- Mark tab ---- */
+function renderMark(){
+  const r=db[st.date]||{},s=r.status||'present',pres=s==='present';
+  $('#dlabel').textContent=longD(st.date);
+  $('#chip').textContent=st.date===today?'Today':'Selected date';
+  document.querySelectorAll('#chips button').forEach(b=>b.classList.toggle('on',(r.status||'')===b.dataset.s));
+  $('#tin').textContent=f12(r.in);$('#tout').textContent=fo(r);$('#hrs').textContent=fdur(dur(r));
+  $('#pcard').style.display=pres?'':'none';$('#scard').style.display=pres?'none':'';
+  if(!pres)$('#stxt').textContent=`Marked as ${LBL[s].toLowerCase()} for this day.`;
+}
+$('#chips').onclick=async e=>{const s=e.target.dataset.s;if(!s)return;const r=db[st.date]||{};
+  if(s!=='present'&&(r.in||r.out)&&!await ask({title:'Replace saved times?',msg:`Marking this day as ${LBL[s].toLowerCase()} will erase its check in and check out times.`,ok:'Replace'}))return;
+  db[st.date]=s==='present'?{...r,status:'present'}:{status:s};persist();renderAll();toast(`Marked as ${LBL[s].toLowerCase()}`)};
+$('#seg').onclick=e=>{const b=e.target.closest('button');if(b)openTime(st.date,b.dataset.m)};
+$('#pickDate').onclick=()=>openCal(k=>{st.date=k;renderMark()},st.date);
+
+/* ---- calendar modal ---- */
+let cal={};
+function openCal(cb,sel){const d=parse(sel);cal={cb,sel,y:d.getFullYear(),m:d.getMonth()};drawCal();$('#calm').classList.add('open')}
+function drawCal(){
+  const first=new Date(cal.y,cal.m,1),n=new Date(cal.y,cal.m+1,0).getDate();
+  $('#mt').textContent=first.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let h='SMTWTFS'.split('').map(x=>`<span>${x}</span>`).join('')+'<i></i>'.repeat(first.getDay());
+  for(let d=1;d<=n;d++){const k=iso(new Date(cal.y,cal.m,d)),r=db[k];
+    h+=`<button data-k="${k}" ${r?`data-s="${r.status||'present'}"`:''} class="${k===today?'today ':''}${k===cal.sel?'sel':''}" ${k>today?'disabled':''}>${d}</button>`}
+  $('#cg').innerHTML=h;
+  const min=new Date(cutD.getFullYear(),cutD.getMonth(),1),cur=new Date(cal.y,cal.m,1),now=new Date();
+  $('#pm').disabled=cur<=min;$('#nm').disabled=cal.y*12+cal.m>=now.getFullYear()*12+now.getMonth();
+}
+const mv=n=>{cal.m+=n;if(cal.m<0){cal.m=11;cal.y--}if(cal.m>11){cal.m=0;cal.y++}drawCal()};
+$('#pm').onclick=()=>mv(-1);$('#nm').onclick=()=>mv(1);
+$('#cg').onclick=e=>{const k=e.target.dataset.k;if(!k)return;$('#calm').classList.remove('open');cal.cb(k)};
+$('#calTd').onclick=()=>{$('#calm').classList.remove('open');cal.cb(today)};
+$('#calX').onclick=()=>$('#calm').classList.remove('open');
+$('#calm').onclick=e=>{if(e.target.id==='calm')e.target.classList.remove('open')};
+
+/* ---- Home tab ---- */
+function renderQC(){
+  const r=db[today]||{},s=r.status||'present';
+  let h=`<div class="qh"><b>Today\u2019s attendance</b>${db[today]?`<span class="badge ${bc(r,today)}">${bt(r,today)}</span>`:''}</div>`;
+  if(s!=='present')h+=`<p class="empty">Today is marked as ${LBL[s].toLowerCase()}.</p><button class="cta ghost" data-p="1">Change to present</button>`;
+  else h+=`<div class="qgrid">${['in','out'].map(m=>`<div><small>${m==='in'?'Check in':'Check out'}</small><button class="qt" data-t="${m}">${m==='in'?f12(r.in):fo(r)}</button>${r[m]?'':`<button class="cta sm${m==='out'?' dark':''}" data-n="${m}" ${m==='out'&&!r.in?'disabled':''}>${m==='in'?'Check in now':'Check out now'}</button>`}</div>`).join('')}</div><div class="hrs"><span>Hours worked</span><b>${fdur(dur(r))}</b></div>`;
+  $('#qc').innerHTML=h}
+$('#qc').onclick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.dataset.t)return openTime(today,b.dataset.t);
+  if(b.dataset.n){if(await setTime(today,b.dataset.n,nowT()))renderAll();return}
+  if(b.dataset.p){db[today]={...db[today],status:'present'};persist();renderAll()}};
+
+function renderHome(){
+  renderQC();
+  const keys=Object.keys(db).sort().reverse(),c30=new Date();c30.setDate(c30.getDate()-30);const c=iso(c30);
+  const recent=keys.filter(k=>k>=c),hs=recent.map(k=>dur(db[k])).filter(x=>x!=null);
+  $('#s1').textContent=recent.filter(k=>(db[k].status||'present')==='present').length;
+  $('#s2').textContent=hs.length?fdur(Math.round(hs.reduce((a,b)=>a+b,0)/hs.length)):'—';
+  $('#s3').textContent=recent.filter(k=>db[k].status==='leave').length;
+  $('#list').innerHTML=keys.length?keys.slice(0,5).map(k=>{const r=db[k],s=r.status||'present',d=parse(k);
+    return`<button class="row" data-k="${k}"><div class="d"><b>${d.getDate()}</b><span>${d.toLocaleDateString('en-GB',{month:'short'})}</span></div>
+    <div class="m"><b>${d.toLocaleDateString('en-GB',{weekday:'long'})}</b>${s==='present'?`${f12(r.in)} \u2013 ${fo(r)}`:LBL[s]}</div>
+    <span class="badge ${bc(r,k)}">${bt(r,k)}</span></button>`}).join('')
+    :'<div class="empty">No records yet. Tap Check in now to start.</div>';
+}
+$('#list').onclick=e=>{const b=e.target.closest('[data-k]');if(b)openDet(b.dataset.k)};
+$('#search').onclick=()=>openCal(openDet,today);
+
+function openDet(k){
+  const r=db[k],s=r&&(r.status||'present');
+  $('#det').innerHTML=`<h3>${longD(k)}</h3>`+(r?
+    `<span class="badge ${s}">${LBL[s]}</span>
+     ${s==='present'?`<div class="tri"><div><span>Check in</span><b>${f12(r.in)}</b></div><div><span>Check out</span><b>${fo(r)}</b></div><div><span>Hours</span><b>${fdur(dur(r))}</b></div></div>`:'<div style="height:16px"></div>'}
+     <div class="two"><button class="cta ghost" id="dDel">Delete</button><button class="cta" id="dEdit">Edit</button></div>`
+    :`<p class="empty">No attendance recorded for this date.</p><div class="two"><button class="cta ghost" id="dX">Close</button><button class="cta" id="dEdit">Add entry</button></div>`);
+  $('#detm').classList.add('open');
+  const x=$('#dX');if(x)x.onclick=()=>$('#detm').classList.remove('open');
+  $('#dEdit').onclick=()=>{st.date=k;$('#detm').classList.remove('open');tab('mark')};
+  const d=$('#dDel');if(d)d.onclick=async()=>{
+    if(await ask({title:'Delete this record?',msg:`${longD(k)} will be permanently removed. This can\u2019t be undone.`,ok:'Delete'})){delete db[k];persist();$('#detm').classList.remove('open');renderAll();toast('Record deleted')}};
+}
+$('#detm').onclick=e=>{if(e.target.id==='detm')e.target.classList.remove('open')};
+
+/* ---- export / backup / restore ---- */
+const dl=(n,t,m)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()};
+$('#csv').onclick=()=>{const keys=Object.keys(db).sort();
+  if(!keys.length)return toast('Nothing to export yet');
+  dl('my-attendance.csv',['Date,Status,Check in,Check out,Hours'].concat(keys.map(k=>{const r=db[k];return[k,LBL[r.status||'present'],f12(r.in),fo(r),fdur(dur(r))].join(',')})).join('\n'),'text/csv')};
+$('#bak').onclick=()=>{if(!Object.keys(db).length)return toast('Nothing to back up yet');
+  dl('my-attendance-backup.json',JSON.stringify({app:'My Attendance',data:db}),'application/json');toast('Backup downloaded')};
+$('#rst').onclick=()=>$('#rf').click();
+$('#rf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const rd=new FileReader();
+  rd.onload=async()=>{let inc={};
+    try{const src=JSON.parse(rd.result).data,T=/^([01]\d|2[0-3]):[0-5]\d$/;
+      for(const k in src){const r=src[k];if(!/^\d{4}-\d\d-\d\d$/.test(k)||k<cut||k>today||!LBL[r.status||'present'])continue;
+        const o={status:r.status||'present'};if(T.test(r.in))o.in=r.in;if(T.test(r.out))o.out=r.out;inc[k]=o}}
+    catch(x){return toast('That is not a valid backup file')}
+    const n=Object.keys(inc).length;if(!n)return toast('No usable records found in that file');
+    if(await ask({title:'Restore backup?',msg:`${n} record${n>1?'s':''} will be added. Records on the same dates will be replaced.`,ok:'Restore'})){Object.assign(db,inc);persist();renderAll();toast('Backup restored')}};
+  rd.readAsText(f)};
+
+/* ---- tabs ---- */
+function tab(t){document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+t));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  window.scrollTo(0,0);renderAll()}
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('button');if(b)tab(b.dataset.t)};
+
+renderAll();
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
